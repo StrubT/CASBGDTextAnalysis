@@ -72,3 +72,22 @@ local.properties
 .cache-main
 .scala_dependencies
 .worksheet
+
+### MAVEN ###
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
+# Mac
+.DS_Store
+
+# Maven
+log/
+target/
