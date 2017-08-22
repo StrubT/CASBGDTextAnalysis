@@ -18,4 +18,4 @@ set bmargin 8
 set terminal png enhanced 
 set output "tfd.png"
 
-plot "tfd.dat" every ::1::30 using ($0):2:xticlabels(1) notitle with boxes
+plot "tfd.dat" every ::0::30 using ($0):2:xticlabels(1) notitle with boxes
