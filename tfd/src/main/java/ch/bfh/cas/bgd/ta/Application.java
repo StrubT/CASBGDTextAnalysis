@@ -42,6 +42,7 @@ public class Application {
 			List<String> lines = sc.textFile(args[0]) //
 					.flatMap(s -> pattern.splitAsStream(s).iterator()) //
 					.mapToPair(s -> new Tuple2<String, Integer>(s, 1)) //
+					.filter(t -> t._1().length() > 0) //
 					.reduceByKey((x, y) -> x + y) //
 					.map(t -> t) //
 					.sortBy(t -> t._2(), false, 1) //
