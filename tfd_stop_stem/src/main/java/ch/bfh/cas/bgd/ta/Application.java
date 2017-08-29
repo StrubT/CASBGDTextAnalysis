@@ -14,10 +14,7 @@ import java.util.stream.Collectors;
 import org.apache.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
-import org.tartarus.Stemmer;
 
-import nz.ac.waikato.IteratedLovinsStemmer;
-import nz.ac.waikato.LovinsStemmer;
 import scala.Tuple2;
 
 public class Application {
@@ -55,8 +52,8 @@ public class Application {
 		Application application = new Application();
 		try (JavaSparkContext sc = application.getSparkContext()) {
 
-			Stemmer porterStemmer = new Stemmer();
-			LovinsStemmer lovinsStemmer = new IteratedLovinsStemmer();
+			PorterStemmer porterStemmer = new PorterStemmer();
+			LovinsStemmer lovinsStemmer = new LovinsStemmer();
 			Pattern pattern = Pattern.compile("\\W+");
 			Logger logger = Logger.getLogger(Application.class);
 
