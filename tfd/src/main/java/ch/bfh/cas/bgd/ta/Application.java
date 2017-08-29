@@ -1,3 +1,4 @@
+
 package ch.bfh.cas.bgd.ta;
 
 import java.io.IOException;
@@ -25,6 +26,7 @@ public class Application {
 	}
 
 	public JavaSparkContext getSparkContext() {
+
 		return sparkContext;
 	}
 
@@ -40,14 +42,14 @@ public class Application {
 
 			Pattern pattern = Pattern.compile("\\W+");
 			List<String> lines = sc.textFile(args[0]) //
-					.flatMap(s -> pattern.splitAsStream(s).iterator()) //
-					.mapToPair(s -> new Tuple2<String, Integer>(s, 1)) //
-					.filter(t -> t._1().length() > 0) //
-					.reduceByKey((x, y) -> x + y) //
-					.map(t -> t) //
-					.sortBy(t -> t._2(), false, 1) //
-					.map(t -> String.format("%s %d", t._1(), t._2())) //
-					.collect();
+				.flatMap(s -> pattern.splitAsStream(s).iterator()) //
+				.mapToPair(s -> new Tuple2<>(s, 1)) //
+				.filter(t -> t._1().length() > 0) //
+				.reduceByKey((x, y) -> x + y) //
+				.map(t -> t) //
+				.sortBy(t -> t._2(), false, 1) //
+				.map(t -> String.format("%s %d", t._1(), t._2())) //
+				.collect();
 
 			Files.write(Paths.get(Configuration.RESULT), lines, StandardCharsets.UTF_8);
 

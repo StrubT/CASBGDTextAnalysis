@@ -91,3 +91,7 @@ local.properties
 # Maven
 log/
 target/
+
+### SETTINGS ###
+Eclipse*.xml
+Eclipse*.importorder

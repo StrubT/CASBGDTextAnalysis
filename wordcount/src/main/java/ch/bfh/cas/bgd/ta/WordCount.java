@@ -1,3 +1,4 @@
+
 package ch.bfh.cas.bgd.ta;
 
 import java.util.regex.Pattern;
@@ -34,7 +35,7 @@ public class WordCount {
 			JavaRDD<String> words = input.flatMap(s -> pattern.splitAsStream(s).iterator());
 
 			// 2. map - transform the collection of words into pairs of <word, 1>
-			JavaPairRDD<String, Integer> counts = words.mapToPair(s -> new Tuple2<String, Integer>(s, 1));
+			JavaPairRDD<String, Integer> counts = words.mapToPair(s -> new Tuple2<>(s, 1));
 
 			// 3. reduce - count the words
 			JavaPairRDD<String, Integer> reducedCounts = counts.reduceByKey((x, y) -> x + y);

@@ -1,3 +1,4 @@
+
 package ch.bfh.cas.bgd.ta;
 
 import java.io.BufferedReader;
@@ -31,6 +32,7 @@ public class Application {
 	}
 
 	public JavaSparkContext getSparkContext() {
+
 		return sparkContext;
 	}
 
@@ -43,7 +45,7 @@ public class Application {
 
 		List<String> stopwords;
 		try (InputStream stream = Application.class.getResourceAsStream("stopwords.txt");
-				BufferedReader streamReader = new BufferedReader(new InputStreamReader(stream))) {
+			BufferedReader streamReader = new BufferedReader(new InputStreamReader(stream))) {
 			stopwords = streamReader.lines().collect(Collectors.toList());
 
 		} catch (IOException ex) {
@@ -59,41 +61,41 @@ public class Application {
 			Logger logger = Logger.getLogger(Application.class);
 
 			Map<String, Integer> baseResults = sc.textFile(args[0]) //
-					.flatMap(s -> pattern.splitAsStream(s).iterator()) //
-					.mapToPair(s -> new Tuple2<String, Integer>(s, 1)) //
-					.filter(t -> t._1().length() > 0) //
-					.reduceByKey((x, y) -> x + y) //
-					.collectAsMap();
+				.flatMap(s -> pattern.splitAsStream(s).iterator()) //
+				.mapToPair(s -> new Tuple2<>(s, 1)) //
+				.filter(t -> t._1().length() > 0) //
+				.reduceByKey((x, y) -> x + y) //
+				.collectAsMap();
 			logger.info(String.format("#base results: %d", baseResults.size()));
 
 			Map<String, Integer> lowerCaseResults = sc.textFile(args[0]) //
-					.flatMap(s -> pattern.splitAsStream(s).iterator()) //
-					.map(s -> s.toLowerCase()) //
-					.mapToPair(s -> new Tuple2<String, Integer>(s, 1)) //
-					.filter(t -> t._1().length() > 0) //
-					.reduceByKey((x, y) -> x + y) //
-					.collectAsMap();
+				.flatMap(s -> pattern.splitAsStream(s).iterator()) //
+				.map(s -> s.toLowerCase()) //
+				.mapToPair(s -> new Tuple2<>(s, 1)) //
+				.filter(t -> t._1().length() > 0) //
+				.reduceByKey((x, y) -> x + y) //
+				.collectAsMap();
 			logger.info(String.format("#lower case results: %d", lowerCaseResults.size()));
 
 			Map<String, Integer> stopwordsResults = sc.textFile(args[0]) //
-					.flatMap(s -> pattern.splitAsStream(s).iterator()) //
-					.map(s -> s.toLowerCase()) //
-					.filter(s -> !stopwords.contains(s)) //
-					.mapToPair(s -> new Tuple2<String, Integer>(s, 1)) //
-					.filter(t -> t._1().length() > 0) //
-					.reduceByKey((x, y) -> x + y) //
-					.collectAsMap();
-			logger.info(String.format("#lower case results - stopwords: %d", stopwordsResults.size()));
+				.flatMap(s -> pattern.splitAsStream(s).iterator()) //
+				.map(s -> s.toLowerCase()) //
+				.filter(s -> !stopwords.contains(s)) //
+				.mapToPair(s -> new Tuple2<>(s, 1)) //
+				.filter(t -> t._1().length() > 0) //
+				.reduceByKey((x, y) -> x + y) //
+				.collectAsMap();
+			logger.info(String.format("#results w/o stopwords: %d", stopwordsResults.size()));
 
 			Map<String, Integer> lovinsStemmerResults = sc.textFile(args[0]) //
-					.flatMap(s -> pattern.splitAsStream(s).iterator()) //
-					.map(s -> s.toLowerCase()) //
-					.filter(s -> !stopwords.contains(s)) //
-					.map(s -> lovinsStemmer.stem(s)) //
-					.mapToPair(s -> new Tuple2<String, Integer>(s, 1)) //
-					.filter(t -> t._1().length() > 0) //
-					.reduceByKey((x, y) -> x + y) //
-					.collectAsMap();
+				.flatMap(s -> pattern.splitAsStream(s).iterator()) //
+				.map(s -> s.toLowerCase()) //
+				.filter(s -> !stopwords.contains(s)) //
+				.map(s -> lovinsStemmer.stem(s)) //
+				.mapToPair(s -> new Tuple2<>(s, 1)) //
+				.filter(t -> t._1().length() > 0) //
+				.reduceByKey((x, y) -> x + y) //
+				.collectAsMap();
 			logger.info(String.format("#lovins stemmer results: %d", lovinsStemmerResults.size()));
 		}
 	}

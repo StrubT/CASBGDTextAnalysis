@@ -1,3 +1,4 @@
+
 package ch.bfh.cas.bgd.ta;
 
 import scala.Serializable;
