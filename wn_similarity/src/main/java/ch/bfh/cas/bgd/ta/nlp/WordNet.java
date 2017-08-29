@@ -1,4 +1,3 @@
-
 package ch.bfh.cas.bgd.ta.nlp;
 
 import java.io.FileInputStream;
@@ -23,63 +22,60 @@ import net.didion.jwnl.dictionary.Dictionary;
 import scala.Serializable;
 
 public class WordNet implements Serializable {
-
 	private static final long serialVersionUID = -584075437666472001L;
 
 	private static Logger logger = LogManager.getLogger(WordNet.class);
-
-	private static Dictionary wordnetDictionary = null;
-
-	private HashMap<String, HashSet<String>> synonymCache = new HashMap<>();
-
+	
+	private static Dictionary wordnetDictionary = null; 
+	
+	private HashMap<String, HashSet<String>> synonymCache = new HashMap<String, HashSet<String>>();
+	
 	public WordNet() throws FileNotFoundException, JWNLException {
-
 		if (wordnetDictionary == null) {
 			// prepare wordnet dictionary
 			JWNL.initialize(new FileInputStream(Configuration.WORDNET_PROPERTIES));
-			wordnetDictionary = Dictionary.getInstance();
-		}
+			wordnetDictionary = Dictionary.getInstance();	
+		}		
 	}
 
 	public HashSet<String> getSynonyms(String word) throws JWNLException {
-
 		HashSet<String> synonyms = synonymCache.get(word);
 		if (synonyms != null) {
-			logger.info("found " + synonyms.size() + " cached synonyms for " + word + ": " + synonyms.toString());
+			logger.info("found " + synonyms.size() + " cached synonyms for " + word +  ": " + synonyms.toString());
 			return synonyms;
 		}
-
-		synonyms = new HashSet<>();
+				
+		synonyms = new HashSet<String>();
 		List<Synset> synsets = getSynsetsFromWN(word);
 		Iterator<Synset> i = synsets.iterator();
 		while (i.hasNext()) {
 			Word[] synWords = i.next().getWords();
-			for (Word synWord : synWords)
-				synonyms.add(synWord.getLemma());
+			for (int j = 0; j < synWords.length; ++j) {
+				synonyms.add(synWords[j].getLemma());
+			}
 		}
-
+		
 		synonymCache.put(word, synonyms);
-
-		logger.info("found " + synonyms.size() + " synonyms for " + word + ": " + synonyms.toString());
+		
+		logger.info("found " + synonyms.size() + " synonyms for " + word +  ": " + synonyms.toString());
 		return synonyms;
 	}
-
+	
 	private List<Synset> getSynsetsFromWN(String word) throws JWNLException {
-
-		List<Synset> list = new ArrayList<>();
+		List<Synset> list = new ArrayList<Synset>();
 		List<IndexWord> iwList = getIndexWordsFromWN(word);
-		Iterator<IndexWord> i = iwList.iterator();
+		Iterator<IndexWord> i  = iwList.iterator();
 		while (i.hasNext()) {
 			Synset[] synsets = i.next().getSenses();
-			for (Synset synset : synsets)
-				list.add(synset);
+			for (int j = 0; j < synsets.length; ++j) {
+				list.add(synsets[j]);
+			}
 		}
 		return list;
 	}
-
+	
 	private List<IndexWord> getIndexWordsFromWN(String word) throws JWNLException {
-
-		List<IndexWord> list = new ArrayList<>();
+		List<IndexWord> list = new ArrayList<IndexWord>();
 		// we do not use a POS tagger so we try all possibilities
 		IndexWord iw = wordnetDictionary.getIndexWord(POS.ADJECTIVE, word);
 		if (iw != null) list.add(iw);
