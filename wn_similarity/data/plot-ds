@@ -1,0 +1,21 @@
+# creates a graph from the data stored in file tfd.dat
+# tfd.dat contains key-value pairs "term term-frequency" separated by space and each pair on a single line
+
+set title "document simlarity"
+
+set xlabel "doc"
+set xtics 1
+set ylabel "doc"
+set ytics 1
+
+set zlabel "similarity"
+set zrange[0:0.015]
+set ticslevel 0
+
+set key off
+
+set terminal eps enhanced 
+
+set output "ds.eps"
+splot "ds.dat" with points palette pointsize 2 pointtype 7
+
