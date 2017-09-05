@@ -1,0 +1,30 @@
+*** Gold Standard ***
+Captain Weston
+Churchill
+Churchills
+Emma
+Frank
+Miss Churchill
+Miss Taylor
+Mr. Frank Churchill
+Mr. Perry
+Mr. Weston
+Mr. Woodhouse
+Mr. and Mrs. Churchill
+Mrs. Perry
+Mrs. Weston
+Mrs. and Miss Bates
+
+*** My Result ***
+Ah
+Churchill
+Emma
+Frank
+Frank Churchill
+Miss
+Miss Bates
+Taylor
+Taylor She
+
+Precision: 0.235294 (4 / 17)
+Recall: 0.090909 (4 / 44)
