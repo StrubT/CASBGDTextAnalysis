@@ -2,9 +2,11 @@
 package ch.bfh.cas.bgd.ta.spark;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.log4j.LogManager;
@@ -14,6 +16,11 @@ import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.PairFunction;
+import org.apache.spark.mllib.classification.NaiveBayes;
+import org.apache.spark.mllib.classification.NaiveBayesModel;
+import org.apache.spark.mllib.linalg.Vector;
+import org.apache.spark.mllib.linalg.Vectors;
+import org.apache.spark.mllib.regression.LabeledPoint;
 
 import ch.bfh.cas.bgd.ta.nlp.Tokenizer;
 import ch.bfh.cas.bgd.ta.nlp.sentiment.SentimentLexicon;
@@ -53,44 +60,55 @@ public class Application implements Serializable {
 		JavaRDD<Review> reviews = app.readData();
 		logger.info("read " + reviews.count() + " reviews");
 
-		//Tokenizer tokenizer = new Tokenizer();
-		//StopWords stopWords = new StopWords();
-		//SentimentLexicon lexicon = new SentimentLexicon();
+		JavaRDD<Review>[] reviewSplits = reviews.randomSplit(new double[] {
+			Configuration.TRAINING_SET_RATIO,
+			Configuration.TEST_SET_RATIO
+		});
+		JavaRDD<Review> reviewsTraining = reviewSplits[0];
+		JavaRDD<Review> reviewsTest = reviewSplits[1];
 
-		JavaRDD<Review> reviewsCount = reviews //
-			.map(r -> {
-				Tokenizer tokenizer = new Tokenizer();
-				SentimentLexicon lexicon = new SentimentLexicon();
+		Function<Review, Vector> getFeatures = (Function<Review, Vector> & Serializable)r -> {
 
-				Map<Boolean, Long> counts = tokenizer.tokenize(r.getReview()).stream() //
-					.map(t -> new Tuple2<>(lexicon.hasPositiveSentiment(t), lexicon.hasNegativeSentiment(t))) //
-					.filter(p -> p._1() || p._2()) //
-					.collect(Collectors.groupingBy(p -> p._1(), Collectors.counting()));
+			Tokenizer tokenizer;
+			SentimentLexicon lexicon;
 
-				double score = counts.get(true) / counts.values().stream().mapToDouble(l -> l).sum();
+			try {
+				tokenizer = new Tokenizer();
+				lexicon = new SentimentLexicon();
 
-				Review v = new Review(r.getId(), r.getReview(), r.getClassGS());
-				v.setClassSA(score * 2. - 1.);
-				return v;
-			});
+			} catch (IOException ex) {
+				throw new UncheckedIOException(ex);
+			}
 
-		Files.write(Paths.get("asdf.txt"), //
-			reviewsCount.collect().stream() //
+			Object keyTrue = new Object();
+			Object keyFalse = new Object();
+
+			Map<Object, Long> counts = tokenizer.tokenize(r.getReview()).stream() //
+				.map(t -> new Tuple2<>(lexicon.hasPositiveSentiment(t), lexicon.hasNegativeSentiment(t))) //
+				.filter(p -> p._1() || p._2()) //
+				.collect(Collectors.groupingBy(p -> p._1() ? keyTrue : keyFalse, Collectors.counting()));
+
+			double f0 = counts.values().stream().mapToDouble(c -> c).sum();
+			double f1 = counts.getOrDefault(keyTrue, 0L) / f0;
+			double f2 = counts.getOrDefault(keyFalse, 0L) / f0;
+
+			return Vectors.dense(f1, f2);
+		};
+
+		JavaRDD<LabeledPoint> pointsTraining = reviewsTraining.map(r -> new LabeledPoint(r.getClassGS(), getFeatures.apply(r)));
+		NaiveBayesModel model = NaiveBayes.train(pointsTraining.rdd());
+
+		JavaRDD<Review> testResults = reviewsTest.map(r -> {
+
+			Review review = new Review(r.getId(), r.getReview(), r.getClassGS());
+			review.setClassSA(model.predict(getFeatures.apply(r)));
+			return review;
+		});
+
+		Files.write(Paths.get("result.txt"), //
+			testResults.collect().stream() //
 				.map(r -> String.format("%s: %f vs. %f", r.getId(), r.getClassGS(), r.getClassSA())) //
 				.collect(Collectors.toList()));
-
-		//JavaRDD<Review>[] reviewPartitions = reviews.randomSplit(new double[] {
-		//	.8,
-		//	.2
-		//});
-		//JavaRDD<Review> reviewsTrain = reviewPartitions[0];
-		//JavaRDD<Review> reviewsTest = reviewPartitions[1];
-		//
-		//JavaRDD<LabeledPoint> reviewsLP = reviewsTrain //
-		//	.map(r -> new LabeledPoint(r.getClassGS(), r.getReview()));
-		//
-		//NaiveBayesModel model = NaiveBayes.train(reviewsLP.rdd());
-		//model.predict(testData);
 	}
 
 	public Application() {
