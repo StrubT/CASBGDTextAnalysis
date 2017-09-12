@@ -1,3 +1,4 @@
+
 package ch.bfh.cas.bgd.ta.util;
 
 import org.apache.spark.api.java.JavaPairRDD;
@@ -20,41 +21,43 @@ public class TypeCaster implements Serializable {
 	public static final ClassTag<Integer> SCALA_INTEGER = ClassTag$.MODULE$.apply(Integer.class);
 	public static final ClassTag<String> SCALA_STRING = ClassTag$.MODULE$.apply(String.class);
 	public static final ClassTag<Double> SCALA_DOUBLE = ClassTag$.MODULE$.apply(Double.class);
+	public static final ClassTag<Long> SCALA_LONG = ClassTag$.MODULE$.apply(Long.class);
 
 	/**
-	 * use to cast a vertex RDD with generic type JavaRDD<Object> to the real type JavaRDD<Tuple2<Object,T>>
-	 * via a map() transformation
-	 * where Tuple2 represents Vertex objects with property type T
+	 * use to cast a vertex RDD with generic type JavaRDD<Object> to the real type JavaRDD<Tuple2<Object,T>> via a map() transformation where Tuple2 represents Vertex objects with property type T
 	 */
 	public static class VertexTypeCaster<T> implements Function<Object, Tuple2<Object, T>>, Serializable {
+
 		private static final long serialVersionUID = 1628637493872783094L;
 
+		@Override
 		public Tuple2<Object, T> call(Object v) throws Exception {
+
 			return (Tuple2<Object, T>)v;
 		}
 	}
 
 	/**
-	 * casts a VertexRDD<Tuple2<Object, T>> to a regular JavaPairRDD<Object, T>
-	 * where propertyType is a scala constant of type scala.reflect.ClassTag<T>
-	 * 
+	 * casts a VertexRDD<Tuple2<Object, T>> to a regular JavaPairRDD<Object, T> where propertyType is a scala constant of type scala.reflect.ClassTag<T>
+	 *
 	 * @param vertexRDD
 	 * @param propertyType
 	 * @return
 	 */
 	public static <T> JavaPairRDD<Object, T> toJavaPairRDD(VertexRDD<T> vertexRDD, ClassTag<T> propertyType) {
-		return new JavaPairRDD<Object, T>((RDD<Tuple2<Object, T>>) vertexRDD, TypeCaster.SCALA_OBJECT, propertyType);
+
+		return new JavaPairRDD<>(vertexRDD, TypeCaster.SCALA_OBJECT, propertyType);
 	}
 
 	/**
-	 * casts a VertexRDD<T> to a regular JavaRDD<T>
-	 * where propertyType is a scala constant of type scala.reflect.ClassTag<T>
-	 * 
+	 * casts a VertexRDD<T> to a regular JavaRDD<T> where propertyType is a scala constant of type scala.reflect.ClassTag<T>
+	 *
 	 * @param vertexRDD
 	 * @param propertyType
 	 * @return
 	 */
 	public static <T> JavaRDD<T> toJavaRDD(VertexRDD<T> vertexRDD, ClassTag<T> propertyType) {
-		return new JavaRDD<T>((RDD<T>) vertexRDD, propertyType);
+
+		return new JavaRDD<>((RDD<T>)vertexRDD, propertyType);
 	}
 }
