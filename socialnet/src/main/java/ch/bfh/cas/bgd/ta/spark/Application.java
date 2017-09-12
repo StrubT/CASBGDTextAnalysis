@@ -73,20 +73,17 @@ public class Application implements Serializable {
 			.map(t -> String.format("%d (%d)", t._1(), t._2())) //
 			.collect(Collectors.toList());
 
-		class MyPropertyMapper implements Function<Tuple2<Long, Long>, Long>, Serializable {
-
-			private static final long serialVersionUID = 7117762102816550697L;
-
-			@Override
-			public Long call(Tuple2<Long, Long> tuple) throws Exception {
-
-				return tuple._2();
-			}
-		}
-
 		long numComponents = new JavaPairRDD<Long, Long>((RDD)graph.ops().connectedComponents().vertices(), TypeCaster.SCALA_LONG, TypeCaster.SCALA_LONG) //
-			.map(new MyPropertyMapper()) //
-			.distinct(1).count();
+			.map(new Function<Tuple2<Long, Long>, Long>() {
+
+				private static final long serialVersionUID = 7117762102816550697L;
+
+				@Override
+				public Long call(Tuple2<Long, Long> tuple) throws Exception {
+
+					return tuple._2();
+				}
+			}).distinct(1).count();
 
 		Path resultPath = Paths.get("result.txt");
 		Files.write(resultPath, Arrays.asList("TOP 5 MOST CONNECTED FRIENDS"));
